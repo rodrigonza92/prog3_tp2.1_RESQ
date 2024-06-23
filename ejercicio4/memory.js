@@ -25,11 +25,25 @@ class Card {
     #flip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.add("flipped");
+        this.isFlipped = true;
     }
 
     #unflip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
+        this.isFlipped = false;
+    }
+
+    toggleFlip(){
+        if (this.isFlipped) {
+            this.#unflip();
+        } else {
+            this.#flip();
+        }
+    }
+
+    matches(otherCard){
+        return this.name === otherCard.name;
     }
 }
 
@@ -74,6 +88,26 @@ class Board {
             this.onCardClick(card);
         }
     }
+
+    shuffleCards() {
+        this.cards.forEach((card) => card.toggleFlip());
+        this.cards = this.cards.sort(() => Math.random() - 0.5);
+        this.cards.forEach((card) => card.toggleFlip());
+        this.render();
+    }
+
+    reset() {
+        this.cards.forEach((card) => card.toggleFlip());
+        this.render();
+    }
+
+    flipDownAllCards(){
+        this.cards.forEach((card) => {
+            if (card.isFlipped){
+                card.toggleFlip();
+            }
+        });
+    }
 }
 
 class MemoryGame {
@@ -101,6 +135,30 @@ class MemoryGame {
                 setTimeout(() => this.checkForMatch(), this.flipDuration);
             }
         }
+    }
+
+    checkForMatch() {
+        const firstCard = this.flippedCards[0];
+        const secondCard = this.flippedCards[1];
+
+        if (firstCard.matches(secondCard)) {
+            this.matchedCards.push(firstCard, secondCard);
+            this.flippedCards = [];
+
+            if (this.matchedCards.length === this.board.cards.length) {
+                this.onGameWon();
+            }
+        } else {
+            this.flippedCards.forEach((card) => card.toggleFlip());
+            this.flippedCards = [];
+        }
+    }
+
+    resetGame() {
+        this.board.reset();
+        this.board.shuffleCards();
+        this.flippedCards = [];
+        this.matchedCards = [];
     }
 }
 
